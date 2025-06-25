@@ -1,0 +1,95 @@
+Snake Game
+
+A modern take on the classic Snake arcade game written entirely in Java Swing. Choose your difficulty, dodge randomly‑placed obstacles, and chase special power‑up food while trying to set a new high score!
+
+## Features
+
+ Gameplay 
+
+ Details 
+
+Difficulty Selector
+
+Easy (150 ms), Medium (100 ms), Hard (50 ms) game‑loop speeds picked via a startup dialog.
+
+Random Obstacles
+
+Ten static obstacles spawn each round, forcing you to plan your path.
+
+Power‑Up Food
+
+Every 5th snack is a blue 2×2 mega‑fruit worth +5 points.
+
+Pause & Resume
+
+Press P to freeze the action. A centered overlay reminds you you’re paused.
+
+Persistent High Score
+
+Your best run is saved in highscore.txt and displayed on‑screen.
+
+Instant Restart
+
+Hit Space after Game Over to dive straight back in.
+
+## Controls
+
+ Key 
+
+ Action 
+
+← ↑ → ↓
+
+Move snake (no reverse into yourself!)
+
+P
+
+Pause / Resume
+
+Space
+
+Restart after Game Over
+
+## Getting Started
+
+### Prerequisites
+
+Java 8 JDK or newer (no external libraries needed).
+
+### Build & Run
+
+# Clone the repo
+$ git clone https://github.com/HassanRasheed91/Snake-Game.git
+$ cd Snake-Game
+
+# Compile
+$ javac Game.java SnakeGame.java
+
+# Launch
+$ java Game
+
+Tip: package the two .class files into a JAR for one‑click launching.
+
+## Project Structure
+
+Snake-Game/
+├── Game.java          # Program entry‑point & difficulty dialog
+├── SnakeGame.java     # Core game logic, rendering & input handling
+└── highscore.txt      # Auto‑created; stores top score across sessions
+
+## Customization
+
+Board Size — change boardWidth in Game.java (height follows automatically).
+
+Obstacle Count — edit placeObstacles() in SnakeGame.java.
+
+Speed Tuning — tweak the millisecond delay passed to the Timer constructor.
+
+## Screenshots / GIFs
+Add a docs/ folder with gameplay images or record a GIF with an open‑source screen‑recorder to show the game in action.
+
+## Contributing
+Pull requests are welcome. If you find a bug or have an idea for a new feature, please open an issue first so we can discuss it.
+
+## License
+This project is released under the MIT License – see LICENSE for details.
