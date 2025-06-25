@@ -1,4 +1,4 @@
-Snake Game
+# Snake Game
 
 A modern take on the classic Snake arcade game written entirely in Java Swing. Choose your difficulty, dodge randomly‑placed obstacles, and chase special power‑up food while trying to set a new high score!
 
@@ -8,7 +8,7 @@ A modern take on the classic Snake arcade game written entirely in Java Swing. 
 
  Details 
 
-Difficulty Selector
+# Difficulty Selector
 
 Easy (150 ms), Medium (100 ms), Hard (50 ms) game‑loop speeds picked via a startup dialog.
 
@@ -32,7 +32,7 @@ Instant Restart
 
 Hit Space after Game Over to dive straight back in.
 
-## Controls
+# Controls
 
  Key 
 
