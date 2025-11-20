@@ -83,3 +83,71 @@
 | **Learning to Discover and Detect Objects (RNCDL)** | NeurIPS 2022 | **Training-based NCDL detector** (supervised on COCO + discovery on unlabeled COCO+LVIS) | Same **LVIS NOD** setting as CoFM: LVIS v1.0 val, 80 COCO known + 1,123 LVIS novel classes. | Same **box mAP@[0.5:0.95]**, reported as **All / Known / Novel**. | **All:** 6.92 **Known:** 25.00 **Novel:** 5.42 | Introduces **Novel Class Discovery and Localization (NCDL)**. First trains a standard detector (e.g., Mask R-CNN) on labeled COCO (80 known classes). Then, on unlabeled COCO+LVIS, it uses the RPN to generate proposals, applies clustering with long-tail constraints, and expands the classifier head with **pseudo-labels** for novel classes. The final detector directly predicts both known and novel categories. | Requires a **complex multi-stage training pipeline** (supervised detector training + clustering + head expansion). Needs careful hyperparameter tuning and significant compute. Despite being fully training-based, it still has **much lower novel mAP** than CoFM. It does **not leverage modern VLMs or SAM**, so its semantic generalization to many rare LVIS novel categories is limited. |
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Literature Review (Hierarchical)
+
+Below is the final hierarchical list of **10 papers** for the literature review of your *training-free novel object detection (NOD)* base paper.
+
+Order:
+1. **Supervised**
+2. **Semi-supervised**
+3. **Unsupervised**
+4. **Zero-shot / training-free (like your base paper)**
+
+---
+
+| # | Paper | Conference / Journal | Year | Setting | Dataset (LVIS part) | mAP Novel | mAP Known | Key Limitations (research view) |
+|---|-------|----------------------|------|---------|----------------------|-----------|-----------|---------------------------------|
+| **Supervised methods** |||||||||
+| 1 | Discriminative Geometry-Aware Learning for Open-Set Object Detection (DiGeo) | ICCV | 2023 | Supervised, geometry-aware detector | COCO, VOC, LVIS (open-set, not LVIS NOD) | COCO: 10.3, VOC: 33.6, LVIS: 17.3 | COCO: 39.2, VOC: 55.1, LVIS: 24.9 | Needs full labels for base and novel classes; requires priors / geometry assumptions; high computational cost (clustering, metric learning); LVIS evaluation is not the LVIS NOD split, so numbers are not directly comparable to your base paper. |
+| 2 | Identification of Novel Classes for Improving Few-Shot Object Detection | ICCV | 2023 | Supervised few-shot detector | VOC, COCO (no LVIS) | VOC: 29.8, COCO: 12.1 | VOC: 53.0, COCO: 17.2 | Assumes a few labeled examples for each novel class (not zero-shot); extra discovery stage increases training / inference cost; no evaluation on LVIS NOD, so cannot be fairly compared with LVIS-based NOD methods. |
+| **Semi-supervised methods** |||||||||
+| 3 | Learning to Discover and Detect Objects (RNCDL) | NeurIPS | 2022 | Open-world semi-supervised NCDL + detection | LVIS v1.0 val (LVIS NOD) | LVIS: 2.56 | LVIS: 12.55 | Two-stage detector with RPN (heavy and slow); performance depends on RPN recall (missed proposals → missed novel objects); clustering on noisy unlabeled data; relatively low novel mAP on LVIS NOD, which motivates lighter training-free methods. |
+| 4 | Open-World Semi-Supervised Learning (ORCA) | ICLR | 2022 | Open-world semi-supervised classification adapted to NOD | LVIS v1.0 val (LVIS NOD) | LVIS: 0.49 | LVIS: 20.57 | Designed mainly for classification, not dense detection; LVIS NOD adaptation uses RNCDL-style pipeline and gives very low novel mAP; lacks vision–language priors and strong semantics; shows limitations of pure clustering-based open-world SSL for LVIS NOD. |
+| **Unsupervised methods** |||||||||
+| 5 | A Unified Objective for Novel Class Discovery (UNO) | ICCV | 2021 | Unsupervised novel class discovery | LVIS v1.0 val (LVIS NOD) | LVIS: 0.61 | LVIS: 21.09 | Optimized for image-level NCD, not box-level detection; relies on feature clustering, so background clutter and overlapping objects hurt performance; no vision–language model; very low LVIS NOD novel mAP. |
+| 6 | Unsupervised Discovery of the Long-Tail in Instance Segmentation Using Hierarchical Self-Supervision | CVPR | 2021 | Unsupervised instance segmentation / NCD | LVIS v1.0 val (LVIS NOD) | LVIS: 0.27 | LVIS: 17.85 | Not an end-to-end detection pipeline (focus on instance segmentation); bounding-box detection is indirect and weak; poor performance as a NOD detector; highlights difficulty of purely unsupervised long-tail discovery. |
+| **Zero-shot / training-free methods (close to your base paper)** |||||||||
+| 7 | Enhancing Novel Object Detection via Cooperative Foundational Models (CoFM) | WACV | 2025 | Training-free NOD using CLIP + SAM cooperation | LVIS v1.0 val (LVIS NOD), COCO | LVIS: 17.42, COCO: 50.3 | LVIS: 42.08, COCO: 49.8 | Strong training-free LVIS NOD baseline; uses multi-model pipeline (detector + CLIP + SAM) with high computation and memory and slower inference; no segmentation; compared with your base paper, its higher LVIS NOD mAP comes from using heavier cooperative foundational models. |
+| 8 | Training-Free Long-Tail Object Detection via Web-Image Retrieval (SearchDet) | CVPR | 2025 | Training-free long-tail / OVOD via web retrieval | LVIS long-tail / OVOD split (not LVIS NOD), COCO, ODinW | LVIS: 43.6, COCO: 59.3, ODinW: 33.1 | LVIS: 35.4, COCO: 59.3, ODinW: 31.1 | Depends on internet image retrieval for each concept (web dependency, high latency per class); retrieval noise makes accuracy unstable; uses different LVIS long-tail/OVOD split and metrics, so its higher LVIS numbers are not directly comparable to your LVIS NOD results; heavy multi-step pipeline. |
+| 9 | Training-free Boost for Open-Vocabulary Object Detection with Confidence Aggregation | arXiv | 2024 | Zero-shot OVOD post-processing | OV-COCO, OV-LVIS (open-vocabulary splits, not LVIS NOD) | LVIS: 35.3, COCO: 35.0 | LVIS: 41.4, COCO: 60.3 | Works only on top of pre-trained two-stage OVOD detectors; visual prototypes depend on strongly supervised base training (more supervision than your method); LVIS uses OV-LVIS split and OVOD metric, not LVIS NOD, so higher mAP is not a fair comparison; adds complexity and slight extra latency without directly targeting NOD under your exact setting. |
+| 10 | Training-Free Open-Ended Object Detection and Segmentation via Attention as Prompts (VL-SAM) | NeurIPS | 2024 | Training-free open-ended detection + segmentation | LVIS open-ended / long-tail split (not LVIS NOD), COCO | LVIS: 23.4 | – | Uses large VLM + SAM with attention as prompts → very slow and memory-heavy; inherits VLM hallucinations and SAM over/under-segmentation; evaluated on open-ended LVIS objectness, not RNCDL LVIS NOD split, so higher AP partly comes from a different task; mainly solves “open-ended objectness + segmentation”, not exactly the same known/novel detection problem as your base paper. |
+
+---
+
+## How to structure the literature review (text outline)
+
+1. **Supervised methods**  
+   - Briefly describe DiGeo and the few-shot identification method.  
+   - Emphasize need for labeled novel classes and focus on VOC/COCO rather than LVIS NOD.
+
+2. **Semi-supervised methods**  
+   - Present RNCDL and ORCA as key LVIS NOD baselines.  
+   - Highlight heavy training (RPN + clustering) and low novel mAP.
+
+3. **Unsupervised methods**  
+   - Discuss UNO and the hierarchical self-supervision method.  
+   - Show that pure NCD / self-supervised feature clustering is not enough for LVIS NOD.
+
+4. **Zero-shot / training-free methods**  
+   - Compare CoFM, SearchDet, Confidence Aggregation, and VL-SAM.  
+   - Clearly state when higher mAP comes from:  
+     - Using heavier multi-model pipelines (CLIP + SAM, web retrieval, big VLMs), or  
+     - Changing the evaluation setting (OVOD / long-tail / open-ended instead of LVIS NOD).  
+   - Use this to motivate your base paper’s design choices and fairness of comparisons.
+
+
+
+
