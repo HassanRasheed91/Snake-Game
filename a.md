@@ -17,3 +17,69 @@
 | **NCDLR† backbone in GCD-Instance** | TMLR 2023 (NCDLR) + AAAI 2025 usage | **Training-based GCD backbone** (supervised GCD + unlabeled LVIS) | **NCDLR** (“Novel Class Discovery for Long-Tailed Recognition”) is a GCD method designed for long-tailed classification; in the AAAI-2025 framework it **replaces the GCD head** while the rest of the instance-seg pipeline is kept the same. It uses pseudo-labeling and contrastive learning tailored for long-tailed distributions, then those pseudo-labels are used to train the instance segmentation network on both known and novel classes. :contentReference[oaicite:11]{index=11} | **COCOhalf + LVIS (mask mAP.50:.05:.95)** within GCD-Instance pipeline: **All:** 9.42, **Known:** 27.81, **Novel:** 8.06. :contentReference[oaicite:12]{index=12} | Better than RNCDL/SimGCD in this setting, but still **below the full GCD-Instance method**. Like other GCD backbones, it is **training-heavy** and originally designed for classification, not dense detection; performance depends strongly on good instance masks and pseudo-label quality. Does not use VLM-based semantics, so may miss very fine-grained novel LVIS categories compared to CoFM. :contentReference[oaicite:13]{index=13} |
 | **SimGCD† backbone in GCD-Instance** | ICCV 2023 (SimGCD) + AAAI 2025 usage | **Training-based parametric GCD** (supervised + unlabeled LVIS) | **SimGCD** proposes a **parametric classifier for generalized category discovery**, arguing that with the right regularization it can handle both seen and unseen categories. In the AAAI-2025 instance-seg pipeline it is used as the GCD model: object crops from COCOhalf + LVIS are encoded and clustered/classified by SimGCD, and the induced pseudo-labels are used to train the instance segmentation model on known and novel classes. :contentReference[oaicite:14]{index=14} | **COCOhalf + LVIS (mask mAP.50:.05:.95)** within GCD-Instance pipeline: **All:** 4.06, **Known:** 23.91, **Novel:** 2.47. :contentReference[oaicite:15]{index=15} | Performs better than simple k-means / UNO / ORCA in this instance-seg GCD setting, but still has **low novel mAP** and is clearly behind NCDLR and the full GCD-Instance method. As with NCDLR, it is **not training-free**, requires full pipeline training, and is originally classification-oriented; without VLMs or open-vocabulary cues it struggles with many fine-grained LVIS novel categories. :contentReference[oaicite:16]{index=16} |
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### Unsupervised / Semi-Supervised / Training-Free LVIS NOD Methods (Same Split + Metric)
+
+| Paper | Venue / Year | Learning type (w.r.t. LVIS NOD) | Dataset & split used | Evaluation metric | LVIS NOD results (box mAP@[0.5:0.95]) | Main idea (for literature review) | Main limitations |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| **Enhancing Novel Object Detection via Cooperative Foundational Models (CoFM)** *(base paper)* | WACV 2025 | **Training-free**, zero-shot NOD (no extra training on LVIS NOD; uses pre-trained foundational models) | **LVIS NOD:** LVIS v1.0 val. 80 COCO known + 1,123 LVIS novel classes (same split as all baselines). | **Bounding-box mAP@[0.5:0.95]**, reported as **All / Known / Novel**. | **All:** 19.33 **Known:** 42.08 **Novel:** 17.42 | Treats novel object detection as a **test-time cooperation problem** instead of a training problem. Uses pre-trained GDINO / Mask R-CNN, CLIP/SigLIP, and SAM to generate, refine, and re-score region proposals for both known and novel categories without any detector retraining on LVIS. | Strong performance but **computationally heavy** at inference and depends on powerful pre-trained VLMs + SAM. Potential data leakage risk due to web-scale pretraining, and currently focuses on **bounding-box** detection only. |
+| **A Unified Objective for Novel Class Discovery (UNO)** | ICCV 2021 | **Training-based NCD** (unsupervised for novel classes; supervised for known classes) adapted to LVIS NOD | Same **LVIS NOD** split as CoFM (80 COCO known / 1,123 LVIS novel, LVIS v1.0 val). Original paper is classification-focused; LVIS NOD results come from later implementations (RNCDL / CoFM) using the same split. | Same **box mAP@[0.5:0.95]**, reported as **All / Known / Novel**. | **All:** 2.18 **Known:** 21.09 **Novel:** 0.61 | Proposes a **single unified classification objective** for labeled (known) and unlabeled (novel) data using multi-view self-labeling. Pseudo-labels for unlabeled samples are refined and then used with cross-entropy as if they were real labels, which encourages discovery of novel categories. In LVIS NOD, UNO is used as a **novel-class discovery backbone** plugged into a detector. | Designed mainly for **image classification**, not dense detection. When adapted to LVIS NOD, it yields **very low novel mAP**, indicating that its pseudo-labeling scheme is not sufficient for large-scale, long-tailed detection. Still requires training (not training-free) and does not use modern VLMs or open-set detectors, limiting semantics for rare categories. |
+| **Open-World Semi-Supervised Learning (ORCA)** | ICLR 2022 | **Open-world semi-supervised classification** backbone adapted to LVIS NOD (unsupervised for unknown classes) | Same **LVIS NOD** split and LVIS v1.0 val as CoFM. Original work is classification-oriented; LVIS NOD results arise from reusing ORCA as a feature / pseudo-label generator within the NOD pipeline. | Same **box mAP@[0.5:0.95]**, with **All / Known / Novel** columns. | **All:** 2.03 **Known:** 20.57 **Novel:** 0.49 | ORCA tackles **open-world semi-supervised learning**: it combines labeled data of seen classes with unlabeled data containing both seen and unseen classes, using an **uncertainty-adaptive margin loss**. For LVIS NOD, ORCA’s representations and pseudo-labels are used to discover novel categories, which are then fed into a detector. | Primarily designed for **classification**, not dense detection. On LVIS NOD it achieves **very poor novel mAP**, showing that its open-world SSL design does not transfer well to large-scale detection. Requires additional training (not training-free) and still lacks VLM-based semantic priors, which weakens performance on many unseen LVIS categories. |
+| **Unsupervised Discovery of the Long-Tail in Instance Segmentation Using Hierarchical Self-Supervision (Weng et al.)** | CVPR 2021 | **Fully unsupervised** long-tail instance segmentation method adapted as NOD baseline | Same **LVIS NOD** split (80 COCO known / 1,123 LVIS novel) and LVIS v1.0 val. Original paper evaluates long-tail instance segmentation; LVIS NOD results are obtained by adapting its representation to detection under the same split + metric as CoFM. | Same **box mAP@[0.5:0.95]**, with **All / Known / Novel**. | **All:** 1.62 **Known:** 17.85 **Novel:** 0.27 | Learns **unsupervised embeddings of instance masks** via hierarchical self-supervision and clustering, so rare and fine-grained long-tail categories emerge without labels. These learned embeddings are then mapped to novel categories and used as a baseline for detection in the LVIS NOD setting. | Depends on **good instance masks and heavy offline clustering**, not on an end-to-end detection pipeline. When turned into a NOD detector, it performs **very poorly** (lowest novel mAP among all methods), indicating that mask-embedding + clustering alone is not enough for large-scale novel object detection. Does not use VLMs or open-vocabulary cues and is not optimized for bounding-box detection. |
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### Supervised / Training-Based LVIS NOD Methods (Same Split + Metric)
+
+| Paper | Venue / Year | Learning type | Dataset & split used | Evaluation metric | LVIS NOD results (box mAP@[0.5:0.95]) | Main idea (for literature review) | Main limitations |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| **Enhancing Novel Object Detection via Cooperative Foundational Models (CoFM)** *(base paper)* | WACV 2025 | **Training-free detector** (uses only pre-trained models; no extra training on LVIS NOD) | **LVIS Novel Object Detection (NOD):** LVIS v1.0 val. 80 COCO classes treated as **known**, 1,123 LVIS classes treated as **novel**. | **Bounding-box mAP@[0.5:0.95]**, reported as **All / Known / Novel**. | **All:** 19.33 **Known:** 42.08 **Novel:** 17.42 | Proposes a **training-free cooperative pipeline** that combines a closed-set detector (Mask R-CNN / GDINO) with **foundational models** (CLIP/SigLIP and SAM). GDINO + open-set Mask R-CNN proposals are merged, SAM provides precise masks, and CLIP/SigLIP scores are used with custom similarity- and region-based refinements to re-rank boxes for both known and novel categories. | Very **heavy at inference time** because multiple large models (detector + SAM + VLM) run together, leading to high latency and memory usage. Possible **data leakage** risk if web-scale pretraining already saw LVIS-like images. Currently focuses on **bounding-box NOD** (segmentation is not fully exploited) and assumes access to strong VLMs and GPU resources. |
+| **Learning to Discover and Detect Objects (RNCDL)** | NeurIPS 2022 | **Training-based NCDL detector** (supervised on COCO + discovery on unlabeled COCO+LVIS) | Same **LVIS NOD** setting as CoFM: LVIS v1.0 val, 80 COCO known + 1,123 LVIS novel classes. | Same **box mAP@[0.5:0.95]**, reported as **All / Known / Novel**. | **All:** 6.92 **Known:** 25.00 **Novel:** 5.42 | Introduces **Novel Class Discovery and Localization (NCDL)**. First trains a standard detector (e.g., Mask R-CNN) on labeled COCO (80 known classes). Then, on unlabeled COCO+LVIS, it uses the RPN to generate proposals, applies clustering with long-tail constraints, and expands the classifier head with **pseudo-labels** for novel classes. The final detector directly predicts both known and novel categories. | Requires a **complex multi-stage training pipeline** (supervised detector training + clustering + head expansion). Needs careful hyperparameter tuning and significant compute. Despite being fully training-based, it still has **much lower novel mAP** than CoFM. It does **not leverage modern VLMs or SAM**, so its semantic generalization to many rare LVIS novel categories is limited. |
+
+
