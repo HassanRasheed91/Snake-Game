@@ -47,3 +47,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### Few-shot methods (LVIS)
+
+| Paper | Conference / Journal | Year | Dataset | mAP Novel (LVIS) | mAP Known (LVIS) | Limitations |
+| --- | --- | --- | --- | --- | --- | --- |
+| Incremental Few-Shot Object Detection via Simple Fine-Tuning Approach (iTFA) | IEEE TNNLS | 2023 | LVIS v1.0 | **APr (rare, novel)**: 18.1  | **APc (common)**: 21.0, **APf (frequent)**: 29.9  | • **Few-shot supervised**: requires K labeled examples for each novel class (1/5/10-shot).   • Needs a base detector trained on all base classes and then fine-tuning for novel classes (not training-free; must retrain for each incremental step).  |
+| Sylph: A Hypernetwork Framework for Incremental Few-Shot Object Detection | CVPR | 2022 | LVIS v1.0 | **APr (rare, novel)**: 13.9 (Aug training recipe)  | **APc (common)**: 19.0, **APf (frequent)**: 25.5  | • **Few-shot supervised**: requires K labeled support examples per novel class.   • Uses meta-training with a base FCOS detector + hypernetwork, so training pipeline is more complex than standard fine-tuning and not training-free.  |
+
+
+
+
+
